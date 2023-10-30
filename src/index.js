@@ -19,6 +19,7 @@ client.on('ready', (c) => {
 });
 
 const puppeteer = require('puppeteer');
+let quotes = "No data yet";
 
 (async () => {
     const browser = await puppeteer.launch();
@@ -27,7 +28,7 @@ const puppeteer = require('puppeteer');
 
     await page.goto('https://sportsdata.usatoday.com/football/nfl/odds'); //goes to the specified site
 
-    const quotes = await page.evaluate(() => {
+    quotes = await page.evaluate(() => {
         const spreadElements = document.querySelectorAll('.class-p7TUuYs'); //spreads
         const teamElements = document.querySelectorAll('.class-8n8fzVk'); //team names
         const teamArray = [];
@@ -62,19 +63,16 @@ const puppeteer = require('puppeteer');
             teamArray.splice(n, 0, spreadArray[count]);
             count++;
         }
-        
+
         return teamArray;
     });
 
-    console.log(quotes);
+    myJSON = JSON.stringify(quotes);
+    console.log(myJSON);
     
-
     await browser.close();
+
 })()
-
-
-
-
 
 /*
 Creates a message/replies based on message sent in discord
@@ -85,20 +83,20 @@ client.on('messageCreate', (message) => {
     }
 
     switch(message.content.toLowerCase()) {
-        case "!winston":
-            randomQuote(message);
+        case "!spread":
+            message.reply(`Here are the spreads for this week: \n ${myJSON}`);
             break;
-        case "!winton":
-            randomQuote(message);
+        case "!spreads":
+            message.reply(myJSON);
             break;
-        case "!monkey":
-            message.reply("I'm not a monkey... I'm a scientist.");
+        case "!picks":
+            message.reply(myJSON);
             break;
-        case "!peanut butter":
-           message.reply("Did somebody say *peanut butter*?");
+        case "!nfl":
+           message.reply(myJSON);
            break;
         case "!commands":
-            message.reply("To get my attention, use any of these 3 commands! (case insensitive) !winston, !winton, !monkey");
+            message.reply("To get my attention, use any of these commands! (case insensitive) !spread(s), !picks, !nfl");
             break;
         default:
           // code block
@@ -106,12 +104,7 @@ client.on('messageCreate', (message) => {
 });
 
 randomQuote = (message) => {
-    const quotes = ["Hi there!", "Salutations.", "No, I do not want a banana.", "Did somebody say *peanut butter*?", 
-    "No monkey business.", "How embarrassing!", "Get a load of this!", "Greetings!", "That was bananas!", 
-    "A gorilla never forgets. Like elephants!", "Coming through!", "Winston reporting.",
-    "Did you miss me? Because I missed you!", "Excuse me for dropping in.", "Did someone call?"];
-    const quoteIndex = Math.floor(Math.random() * 16);
-    message.reply(quotes[quoteIndex]);
+    message.reply(quotes);
   }
 
 client.login(process.env.TOKEN); //bot's password (keep safe, can reset token)
