@@ -67,9 +67,20 @@ let quotes = "No data yet";
         return teamArray;
     });
 
-    myJSON = JSON.stringify(quotes);
-    console.log(myJSON);
-    
+    var sample = [];
+    var count = 0;
+
+    for (var m = 0; m < quotes.length; m += 4) {
+        sample.push({
+            AwayTeam: (JSON.stringify(quotes[m])).replace('"AwayTeam":" ', ''),
+            AwaySpread: (JSON.stringify(quotes[m+1])).replace('"Spread":"', ''),
+            HomeTeam: (JSON.stringify(quotes[m+2])).replace('"HomeTeam":" ', ''),
+            HomeSpread: ((JSON.stringify(quotes[m+3])).replace('"Spread":"', '')),
+        })
+    };
+
+    myJSON = JSON.stringify(sample, null, null);
+    console.log(sample);
     await browser.close();
 
 })()
