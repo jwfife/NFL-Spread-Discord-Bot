@@ -1,5 +1,5 @@
 require('dotenv').config(); //has access to .env file
-const { Client, IntentsBitField } = require('discord.js');
+const { Client, IntentsBitField, EmbedBuilder } = require('discord.js');
 
 const client = new Client({ //bot instance
     intents: [
@@ -31,9 +31,10 @@ let quotes = "No data yet";
     quotes = await page.evaluate(() => {
         const spreadElements = document.querySelectorAll('.class-p7TUuYs'); //spreads
         const teamElements = document.querySelectorAll('.class-8n8fzVk'); //team names
+        const weekElements = document.querySelectorAll('.class-urWQNRe');
         const teamArray = [];
         const spreadArray = [];
-        const fullArray = [];
+        const weekArray = [];
         
         /*
         for (const quoteElement of quoteElements){ 
@@ -64,6 +65,10 @@ let quotes = "No data yet";
             count++;
         }
 
+        for (var m = 0; m < weekElements.length; m++){
+            weekArray.push(weekElements[m].textContent);
+        }
+
         return teamArray;
     });
 
@@ -71,12 +76,17 @@ let quotes = "No data yet";
     var count = 0;
 
     for (var m = 0; m < quotes.length; m += 4) {
-        sample.push({
-            AwayTeam: (JSON.stringify(quotes[m])).replace('"AwayTeam":" ', ''),
-            AwaySpread: (JSON.stringify(quotes[m+1])).replace('"Spread":"', ''),
-            HomeTeam: (JSON.stringify(quotes[m+2])).replace('"HomeTeam":" ', ''),
-            HomeSpread: ((JSON.stringify(quotes[m+3])).replace('"Spread":"', '')),
-        })
+        if (quotes[m] !== null){
+            sample.push({
+                AwayTeam: (JSON.stringify(quotes[m])).replace('"AwayTeam":"', ''),
+                AwaySpread: (JSON.stringify(quotes[m+1])).replace('"Spread":"', ''),
+                HomeTeam: (JSON.stringify(quotes[m+2])).replace('"HomeTeam":"', ''),
+                HomeSpread: (JSON.stringify(quotes[m+3])).replace('"Spread":"', ''),
+            })
+        }
+        else {
+            continue;
+        }
     };
 
     myJSON = JSON.stringify(sample, null, null);
@@ -88,6 +98,7 @@ let quotes = "No data yet";
 /*
 Creates a message/replies based on message sent in discord
 */
+
 client.on('messageCreate', (message) => {
     if (message.author.bot) {
         return;
@@ -95,7 +106,7 @@ client.on('messageCreate', (message) => {
 
     switch(message.content.toLowerCase()) {
         case "!spread":
-            message.reply(`Here are the spreads for this week: \n ${myJSON}`);
+            message.reply(`This week's spreads \n ${myJSON}`);
             break;
         case "!spreads":
             message.reply(myJSON);
