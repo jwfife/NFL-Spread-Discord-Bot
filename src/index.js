@@ -21,6 +21,7 @@ client.on('ready', (c) => {
 const puppeteer = require('puppeteer');
 let quotes = "No data yet";
 
+//grabs the data from the page
 (async () => {
     const browser = await puppeteer.launch();
 
@@ -31,21 +32,11 @@ let quotes = "No data yet";
     quotes = await page.evaluate(() => {
         const spreadElements = document.querySelectorAll('.class-p7TUuYs'); //spreads
         const teamElements = document.querySelectorAll('.class-8n8fzVk'); //team names
-        const weekElements = document.querySelectorAll('.class-urWQNRe');
         const teamArray = [];
         const spreadArray = [];
-        const weekArray = [];
+        const numTeams = spreadElements.length - teamElements.length; //number of teams playing this week
         
-        /*
-        for (const quoteElement of quoteElements){ 
-            const poopText = quoteElement.querySelector('b.class-p7TUuYs').textContent;
-            quotesArray.push({
-                //AwayTeam: quoteText,
-                Spread: poopText,
-            });
-        }
-        */
-
+        //adds the home teams and away teams to the teamArray
         for (var i = 0; i < teamElements.length; i++) {
             if (i % 2 !== 0){
                 teamArray.push({HomeTeam: teamElements[i].textContent});
@@ -55,29 +46,27 @@ let quotes = "No data yet";
             }
         }
 
+        //adds the spreads to the spread array
         for (var k = 0; k < spreadElements.length; k += 3) {
             spreadArray.push({Spread: spreadElements[k].textContent});
         }
 
+        //splices the team array and the spread array together in their respective places
         var count = 0;
-        for (var n = 1; n < spreadElements.length -32; n +=2) {
+        for (var n = 1; n < numTeams; n +=2) {
             teamArray.splice(n, 0, spreadArray[count]);
             count++;
         }
-
-        for (var m = 0; m < weekElements.length; m++){
-            weekArray.push(weekElements[m].textContent);
-        }
-
+        
         return teamArray;
     });
 
-    var sample = [];
-    var count = 0;
+    var finalArray = [];
 
+    //creates a new array of strings with less filler text
     for (var m = 0; m < quotes.length; m += 4) {
         if (quotes[m] !== null){
-            sample.push({
+            finalArray.push({
                 AwayTeam: (JSON.stringify(quotes[m])).replace('"AwayTeam":"', ''),
                 AwaySpread: (JSON.stringify(quotes[m+1])).replace('"Spread":"', ''),
                 HomeTeam: (JSON.stringify(quotes[m+2])).replace('"HomeTeam":"', ''),
@@ -89,8 +78,9 @@ let quotes = "No data yet";
         }
     };
 
-    myJSON = JSON.stringify(sample, null, null);
-    console.log(sample);
+    //stringifies the finalArray array
+    myJSON = JSON.stringify(finalArray, null, null);
+    console.log(finalArray);
     await browser.close();
 
 })()
@@ -109,13 +99,13 @@ client.on('messageCreate', (message) => {
             message.reply(`This week's spreads \n ${myJSON}`);
             break;
         case "!spreads":
-            message.reply(myJSON);
+            message.reply(`This week's spreads \n ${myJSON}`);
             break;
         case "!picks":
-            message.reply(myJSON);
+            message.reply(`This week's spreads \n ${myJSON}`);
             break;
         case "!nfl":
-           message.reply(myJSON);
+            message.reply(`This week's spreads \n ${myJSON}`);
            break;
         case "!commands":
             message.reply("To get my attention, use any of these commands! (case insensitive) !spread(s), !picks, !nfl");
@@ -124,9 +114,5 @@ client.on('messageCreate', (message) => {
           // code block
       }
 });
-
-randomQuote = (message) => {
-    message.reply(quotes);
-  }
 
 client.login(process.env.TOKEN); //bot's password (keep safe, can reset token)
