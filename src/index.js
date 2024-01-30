@@ -1,6 +1,7 @@
 require('dotenv').config(); //has access to .env file
 const { Client, IntentsBitField, EmbedBuilder } = require('discord.js');
 
+
 const client = new Client({ //bot instance
     intents: [
         IntentsBitField.Flags.Guilds,
@@ -19,7 +20,8 @@ client.on('ready', (c) => {
 });
 
 const puppeteer = require('puppeteer');
-let quotes = "No data yet";
+let spreads = "No data yet";
+var currentTime = new Date();
 
 //grabs the data from the page
 (async () => {
@@ -29,13 +31,17 @@ let quotes = "No data yet";
 
     await page.goto('https://sportsdata.usatoday.com/football/nfl/odds'); //goes to the specified site
 
-    quotes = await page.evaluate(() => {
+    spreads = await page.evaluate(() => {
+        const weekElements = document.querySelectorAll('.class-5lL8deo'); //weeks/dates
         const spreadElements = document.querySelectorAll('.class-p7TUuYs'); //spreads
         const teamElements = document.querySelectorAll('.class-8n8fzVk'); //team names
+        const weekArray = [];
         const teamArray = [];
         const spreadArray = [];
         const numTeams = spreadElements.length - teamElements.length; //number of teams playing this week
         
+        
+
         //adds the home teams and away teams to the teamArray
         for (var i = 0; i < teamElements.length; i++) {
             if (i % 2 !== 0){
@@ -57,20 +63,20 @@ let quotes = "No data yet";
             teamArray.splice(n, 0, spreadArray[count]);
             count++;
         }
-        
+
         return teamArray;
     });
 
     var finalArray = [];
 
     //creates a new array of strings with less filler text
-    for (var m = 0; m < quotes.length; m += 4) {
-        if (quotes[m] !== null){
+    for (var m = 0; m < spreads.length; m += 4) {
+        if (spreads[m] !== null){
             finalArray.push({
-                AwayTeam: (JSON.stringify(quotes[m])).replace('"AwayTeam":"', ''),
-                AwaySpread: (JSON.stringify(quotes[m+1])).replace('"Spread":"', ''),
-                HomeTeam: (JSON.stringify(quotes[m+2])).replace('"HomeTeam":"', ''),
-                HomeSpread: (JSON.stringify(quotes[m+3])).replace('"Spread":"', ''),
+                AwayTeam: (JSON.stringify(spreads[m])).replace('"AwayTeam":"', ''),
+                AwaySpread: (JSON.stringify(spreads[m+1])).replace('"Spread":"', '') + '                                       ',
+                HomeTeam: (JSON.stringify(spreads[m+2])).replace('"HomeTeam":"', ''),
+                HomeSpread: (JSON.stringify(spreads[m+3])).replace('"Spread":"', '') + '                                       ',
             })
         }
         else {
@@ -80,7 +86,7 @@ let quotes = "No data yet";
 
     //stringifies the finalArray array
     myJSON = JSON.stringify(finalArray, null, null);
-    console.log(finalArray);
+    console.log(myJSON);
     await browser.close();
 
 })()
@@ -94,9 +100,16 @@ client.on('messageCreate', (message) => {
         return;
     }
 
+    var newLineChar = '\\n';
+
     switch(message.content.toLowerCase()) {
         case "!spread":
-            message.reply(`This week's spreads \n ${myJSON}`);
+            for (let i = 0; i < myJSON.length; i += 20){
+                if (myJSON[i] === ","){
+                    myJSON = myJSON.slice(0, i) + newLineChar + myJSON.slice(i);
+                }
+            }
+            message.channel.send('```json\n' + myJSON + '\n```');
             break;
         case "!spreads":
             message.reply(`This week's spreads \n ${myJSON}`);
