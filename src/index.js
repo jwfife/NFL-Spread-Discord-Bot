@@ -104,21 +104,16 @@ client.on('messageCreate', (message) => {
 
     switch(message.content.toLowerCase()) {
         case "!spread":
-            for (let i = 0; i < myJSON.length; i += 20){
-                if (myJSON[i] === ","){
-                    myJSON = myJSON.slice(0, i) + newLineChar + myJSON.slice(i);
-                }
-            }
-            message.channel.send('```json\n' + myJSON + '\n```');
+            sendSpreads(message);
             break;
         case "!spreads":
-            message.reply(`This week's spreads \n ${myJSON}`);
+            sendSpreads(message);
             break;
         case "!picks":
-            message.reply(`This week's spreads \n ${myJSON}`);
+            sendSpreads(message);
             break;
         case "!nfl":
-            message.reply(`This week's spreads \n ${myJSON}`);
+            sendSpreads(message);
            break;
         case "!commands":
             message.reply("To get my attention, use any of these commands! (case insensitive) !spread(s), !picks, !nfl");
@@ -127,5 +122,14 @@ client.on('messageCreate', (message) => {
           // code block
       }
 });
+
+function sendSpreads(message){
+    for (let i = 0; i < myJSON.length; i += 20){
+        if (myJSON[i] === ","){
+            myJSON = myJSON.slice(0, i) + newLineChar + myJSON.slice(i);
+        }
+    }
+    message.channel.send('```json\n' + myJSON + '\n```');
+}
 
 client.login(process.env.TOKEN); //bot's password (keep safe, can reset token)
