@@ -1,6 +1,5 @@
 require('dotenv').config(); //has access to .env file
-const { Client, IntentsBitField, EmbedBuilder } = require('discord.js');
-
+const { Client, IntentsBitField} = require('discord.js');
 
 const client = new Client({ //bot instance
     intents: [
@@ -21,7 +20,6 @@ client.on('ready', (c) => {
 
 const puppeteer = require('puppeteer');
 let spreads = "No data yet";
-var currentTime = new Date();
 
 //grabs the data from the page
 (async () => {
@@ -32,29 +30,25 @@ var currentTime = new Date();
     await page.goto('https://sportsdata.usatoday.com/football/nfl/odds'); //goes to the specified site
 
     spreads = await page.evaluate(() => {
-        const weekElements = document.querySelectorAll('.class-5lL8deo'); //weeks/dates
-        const spreadElements = document.querySelectorAll('.class-p7TUuYs'); //spreads
         const teamElements = document.querySelectorAll('.class-8n8fzVk'); //team names
-        const weekArray = [];
+        const spreadElements = document.querySelectorAll('.class-p7TUuYs'); //spreads
         const teamArray = [];
         const spreadArray = [];
         const numTeams = spreadElements.length - teamElements.length; //number of teams playing this week
-        
-        
 
         //adds the home teams and away teams to the teamArray
         for (var i = 0; i < teamElements.length; i++) {
             if (i % 2 !== 0){
-                teamArray.push({HomeTeam: teamElements[i].textContent});
+                teamArray.push({HomeTeam: teamElements[i].innerText});
             }
             else{
-                teamArray.push({AwayTeam: teamElements[i].textContent});
+                teamArray.push({AwayTeam: teamElements[i].innerText});
             }
         }
 
         //adds the spreads to the spread array
         for (var k = 0; k < spreadElements.length; k += 3) {
-            spreadArray.push({Spread: spreadElements[k].textContent});
+            spreadArray.push({Spread: spreadElements[k].innerText});
         }
 
         //splices the team array and the spread array together in their respective places
@@ -85,8 +79,7 @@ var currentTime = new Date();
     };
 
     //stringifies the finalArray array
-    myJSON = JSON.stringify(finalArray, null, null);
-    console.log(myJSON);
+    stringFinalArrayJSON = JSON.stringify(finalArray, null, null);
     await browser.close();
 
 })()
@@ -99,8 +92,6 @@ client.on('messageCreate', (message) => {
     if (message.author.bot) {
         return;
     }
-
-    var newLineChar = '\\n';
 
     switch(message.content.toLowerCase()) {
         case "!spread":
@@ -116,20 +107,20 @@ client.on('messageCreate', (message) => {
             sendSpreads(message);
            break;
         case "!commands":
-            message.reply("To get my attention, use any of these commands! (case insensitive) !spread(s), !picks, !nfl");
+            message.reply("To get my attention, use any of these commands! \n (case insensitive) \n - !spread(s) \n - !picks \n - !nfl");
             break;
         default:
-          // code block
+            message.reply("Please use !commands for a list of commands to use.")
       }
 });
 
 function sendSpreads(message){
-    for (let i = 0; i < myJSON.length; i += 20){
-        if (myJSON[i] === ","){
-            myJSON = myJSON.slice(0, i) + newLineChar + myJSON.slice(i);
+    for (let i = 0; i < stringFinalArrayJSON.length; i += 20){
+        if (stringFinalArrayJSON[i] === ","){
+            stringFinalArrayJSON = stringFinalArrayJSON.slice(0, i) + newLineChar + stringFinalArrayJSON.slice(i);
         }
     }
-    message.channel.send('```json\n' + myJSON + '\n```');
+    message.channel.send('```json\n' + stringFinalArrayJSON + '\n```');
 }
 
 client.login(process.env.TOKEN); //bot's password (keep safe, can reset token)
